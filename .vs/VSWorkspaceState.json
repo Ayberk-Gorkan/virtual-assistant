@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\.github",
+    "\\.github\\workflows",
+    "\\docs",
+    "\\src",
+    "\\src\\agricultural-consultant",
+    "\\src\\agricultural-consultant\\data",
+    "\\src\\agricultural-consultant\\tools"
+  ],
+  "SelectedNode": "\\.github\\workflows\\build-and-push.yml",
+  "PreviewInSolutionExplorer": false
+}

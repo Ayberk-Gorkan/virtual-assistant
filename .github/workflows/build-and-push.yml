@@ -1,0 +1,47 @@
+# .github/workflows/build-and-push.yml
+name: Build and Push to Harbor
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to Harbor
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.HARBOR_URL }}
+          username: ${{ secrets.HARBOR_USER }}
+          password: ${{ secrets.HARBOR_PASS }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.HARBOR_URL }}/virtual-assistant:latest
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Update GitOps repository
+        env:
+          K8S_REPO_URL: https://${{ secrets.ACCESS_TOKEN }}@github.com/kullanici_adiniz/virtual-assistant-k8s.git
+        run: |
+          git clone $K8S_REPO_URL
+          cd virtual-assistant-k8s
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          yq e '.spec.template.spec.containers[0].image = "${{ secrets.HARBOR_URL }}/virtual-assistant:'"$IMAGE_TAG"'"' -i deployment.yaml
+          git add deployment.yaml
+          git commit -m "Update image tag to $IMAGE_TAG"
+          git push
+
